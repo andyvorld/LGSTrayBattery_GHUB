@@ -20,9 +20,32 @@ namespace LGSTrayBattery_GHUB
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly MainWindowViewModel _viewModel;
+
         public MainWindow()
         {
             InitializeComponent();
+            _viewModel = new MainWindowViewModel();
+            this.DataContext = _viewModel;
+
+            this.TrayIcon.Icon = Properties.Resources.Discovery;
+        }
+
+        private void DeviceSelect_OnClick(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = (MenuItem)sender;
+
+            _viewModel.UpdateSelectedDevice((Device)menuItem.DataContext);
+        }
+
+        private void RescanDevices(object sender, RoutedEventArgs e)
+        {
+            _viewModel.ScanDevices();
+        }
+
+        private void ExitButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
         }
     }
 }
