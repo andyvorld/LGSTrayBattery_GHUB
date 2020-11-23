@@ -7,7 +7,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{B801C80E-7D9E-4424-A79C-030252477EE6}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>LGSTrayBattery_GHUB</RootNamespace>
     <AssemblyName>LGSTrayBattery_GHUB</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
