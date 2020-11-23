@@ -84,7 +84,7 @@ namespace LGSTrayBattery_GHUB
                         string content = "";
 
                         string[] request = matches.Groups[1].ToString().Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-                        string rootRequest = request[0] ?? ";";
+                        string rootRequest = request.Length > 0 ? request[0] : "";
 
                         if (rootRequest == "devices")
                         {
@@ -100,7 +100,7 @@ namespace LGSTrayBattery_GHUB
                         }
                         else if (rootRequest == "device")
                         {
-                            string deviceId = request[1] ?? "";
+                            string deviceId = request.Length > 1 ? request[1] : "";
                             Device targetDevice = viewModel.DeviceList.FirstOrDefault(x => x.DeviceId == deviceId);
 
                             if (targetDevice == null)
