@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +32,34 @@ namespace LGSTrayBattery_GHUB
             this.DataContext = _viewModel;
 
             this.TrayIcon.Icon = Properties.Resources.Discovery;
+
+#if !DEBUG
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+#endif
+        }
+
+        private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs msg)
+        {
+            Exception ex = msg.ExceptionObject as Exception;
+            string crashFileName = "./CrashLog_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            using (StreamWriter writer = new StreamWriter(crashFileName, false))
+            {
+                writer.WriteLine("-----------------------------------------------------------------------------");
+                writer.WriteLine("Date : " + DateTime.Now.ToString(CultureInfo.InvariantCulture));
+
+                while (ex != null)
+                {
+                    writer.WriteLine("-----------------------------------------------------------------------------");
+                    writer.WriteLine(ex.GetType().FullName);
+                    writer.WriteLine("Message :");
+                    writer.WriteLine(ex.Message);
+                    writer.WriteLine("StackTrace :");
+                    writer.WriteLine(ex.StackTrace);
+                    writer.WriteLine();
+
+                    ex = ex.InnerException;
+                }
+            }
         }
 
         private void DeviceSelect_OnClick(object sender, RoutedEventArgs e)
