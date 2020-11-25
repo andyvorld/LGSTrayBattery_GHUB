@@ -6,10 +6,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LGSTrayBattery_GHUB.Properties;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Websocket.Client;
@@ -30,6 +32,36 @@ namespace LGSTrayBattery_GHUB
         public List<Device> DeviceList { get; private set; }
 
         private Thread _httpServer;
+
+        private bool? _autoStart = null;
+        public bool AutoStart
+        {
+            get
+            {
+                if (_autoStart == null)
+                {
+                    RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    _autoStart = registryKey?.GetValue("LGSTrayBattery_GHUB") != null;
+                }
+
+                return _autoStart ?? false;
+            }
+            set
+            {
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+                if (value)
+                {
+                    registryKey.SetValue("LGSTrayBattery_GHUB", Assembly.GetEntryAssembly().Location);
+                }
+                else
+                {
+                    registryKey.DeleteValue("LGSTrayBattery_GHUB", false);
+                }
+
+                _autoStart = value;
+            }
+        }
 
         public MainWindowViewModel()
         {

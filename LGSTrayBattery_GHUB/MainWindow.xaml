@@ -31,6 +31,11 @@
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="Rescan Devices" Click="RescanDevices"/>
+                <MenuItem Header="Autostart with Windows" 
+                          IsCheckable="True"
+                          IsChecked="{Binding AutoStart, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                          StaysOpenOnClick="True"/>
+                <Separator/>
                 <MenuItem Header="Exit" Click="ExitButton_OnClick"/>
             </ContextMenu>
         </tb:TaskbarIcon.ContextMenu>
