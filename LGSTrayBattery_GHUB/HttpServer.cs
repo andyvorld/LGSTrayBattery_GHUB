@@ -71,58 +71,93 @@ namespace LGSTrayBattery_GHUB
             {
                 using (Socket client = listener.Accept())
                 {
-                    var bytes = new byte[1024];
-                    var bytesRec = client.Receive(bytes);
-
-                    string httpRequest = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-
-                    var matches = Regex.Match(httpRequest, @"GET (.+?) HTTP\/[0-9\.]+");
-                    if (matches.Groups.Count > 0)
+                    try
                     {
-                        int statusCode = 200;
-                        string contentType = "text";
-                        string content = "";
+                        var bytes = new byte[1024];
+                        var bytesRec = client.Receive(bytes);
 
-                        string[] request = matches.Groups[1].ToString().Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
-                        string rootRequest = request.Length > 0 ? request[0] : "";
+                        string httpRequest = Encoding.ASCII.GetString(bytes, 0, bytesRec);
 
-                        if (rootRequest == "devices")
+                        var matches = Regex.Match(httpRequest, @"GET (.+?) HTTP\/[0-9\.]+");
+                        if (matches.Groups.Count > 0)
                         {
-                            contentType = "text/html";
-                            content = "<html>";
+                            int statusCode = 400;
+                            string contentType = "text";
+                            string content = "";
 
-                            foreach (var device in viewModel.DeviceList)
+                            string[] request = matches.Groups[1].ToString()
+                                .Split(new string[] {"/"}, StringSplitOptions.RemoveEmptyEntries);
+                            string rootRequest = request.Length > 0 ? request[0] : "";
+
+                            if (rootRequest == "devices")
                             {
-                                content += $"{device.DisplayName} : <a href=\"/device/{device.DeviceId}\">{device.DeviceId}</a><br>";
+                                statusCode = 200;
+                                contentType = "text/html";
+                                content = "<html>";
+
+                                foreach (var device in viewModel.DeviceList)
+                                {
+                                    content +=
+                                        $"{device.DisplayName} : <a href=\"/device/{device.DeviceId}\">{device.DeviceId}</a><br>";
+                                }
+
+                                content += "</html>";
+                            }
+                            else if (rootRequest == "device")
+                            {
+                                string deviceId = request.Length > 1 ? request[1] : "";
+                                Device targetDevice = viewModel.DeviceList.FirstOrDefault(x => x.DeviceId == deviceId);
+
+                                if (targetDevice == null)
+                                {
+                                    statusCode = 404;
+                                    content = $"Device not found, ID = {request[1]}";
+                                }
+                                else
+                                {
+                                    statusCode = 200;
+                                    content = targetDevice.ToXml();
+                                    contentType = "text/xml";
+                                }
                             }
 
-                            content += "</html>";
+                            string response = $"HTTP/1.1 {statusCode}\r\n" +
+                                              $"{contentType}\r\n" +
+                                              $"Cache-Control: no-store, must-revalidate\r\n" +
+                                              $"Pragma: no-cache\r\n" +
+                                              $"Expires: 0\r\n" +
+                                              $"\r\n{content}";
+
+                            client.Send(Encoding.ASCII.GetBytes(response));
                         }
-                        else if (rootRequest == "device")
+                    }
+                    catch (Exception ex)
+                    {
+                        #if DEBUG
+                        throw ex;
+                        #endif
+
+                        StringBuilder sb = new StringBuilder();
+
+                        while (ex != null)
                         {
-                            string deviceId = request.Length > 1 ? request[1] : "";
-                            Device targetDevice = viewModel.DeviceList.FirstOrDefault(x => x.DeviceId == deviceId);
+                            sb.AppendLine("-----------------------------------------------------------------------------");
+                            sb.AppendLine(ex.GetType().FullName);
+                            sb.AppendLine("Message :");
+                            sb.AppendLine(ex.Message);
+                            sb.AppendLine("StackTrace :");
+                            sb.AppendLine(ex.StackTrace);
+                            sb.AppendLine();
 
-                            if (targetDevice == null)
-                            {
-                                statusCode = 404;
-                                content = $"Device not found, ID = {request[1]}";
-                            }
-                            else
-                            {
-                                content = targetDevice.ToXml();
-                                contentType = "text/xml";
-                            }
+                            ex = ex.InnerException;
                         }
 
-                        string response = $"HTTP/1.1 {statusCode}\r\n";
-                        response += $"{contentType}\r\n";
-
-                        response += "Cache-Control: no-store, must-revalidate\r\n";
-                        response += "Pragma: no-cache\r\n";
-                        response += "Expires: 0\r\n";
-
-                        response += $"\r\n{content}";
+                        string response = $"HTTP/1.1 400\r\n" +
+                                          $"text\r\n" +
+                                          $"Cache-Control: no-store, must-revalidate\r\n" +
+                                          $"Pragma: no-cache\r\n" +
+                                          $"Expires: 0\r\n" +
+                                          $"\r\n{sb}";
 
                         client.Send(Encoding.ASCII.GetBytes(response));
                     }
