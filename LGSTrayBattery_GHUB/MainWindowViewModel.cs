@@ -28,7 +28,7 @@ namespace LGSTrayBattery_GHUB
 
         private WebsocketClient _ws = null;
 
-        [PropertyChanged.DependsOn("SelectedDevice", "_trayToolTip")]
+        [PropertyChanged.DependsOn("SelectedDevice.ToolTip", "_trayToolTip")]
         public string TrayToolTip => _trayToolTip ?? SelectedDevice?.ToolTip;
 
         private string _trayToolTip { get; set; } = null;
