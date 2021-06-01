@@ -16,7 +16,7 @@
     <tb:TaskbarIcon x:Name="TrayIcon"
                     IconSource="{Binding SelectedDevice.Percentage, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BatteryToIcoConverter}}"
                     Visibility="Visible"
-                    ToolTipText="{Binding SelectedDevice.ToolTip, UpdateSourceTrigger=PropertyChanged}">
+                    ToolTipText="{Binding TrayToolTip, UpdateSourceTrigger=PropertyChanged}">
         <tb:TaskbarIcon.ContextMenu>
             <ContextMenu>
                 <MenuItem Header="Devices" ItemsSource="{Binding DeviceList, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="DisplayName">
