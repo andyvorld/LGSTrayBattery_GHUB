@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using LGSTrayBattery_GHUB.Properties;
@@ -106,28 +107,14 @@ namespace LGSTrayBattery_GHUB
             {
                 msgId = "",
                 verb = "SUBSCRIBE",
-                path = "/devices/arrival"
+                path = "/devices/state/changed"
             }));
 
             _ws.Send(JsonConvert.SerializeObject(new
             {
                 msgId = "",
                 verb = "SUBSCRIBE",
-                path = "/devices/removal"
-            }));
-
-            _ws.Send(JsonConvert.SerializeObject(new
-            {
-                msgId = "",
-                verb = "SUBSCRIBE",
-                path = "/devices/state_changed"
-            }));
-
-            _ws.Send(JsonConvert.SerializeObject(new
-            {
-                msgId = "",
-                verb = "SUBSCRIBE",
-                path = "/battery_state_changed"
+                path = "/battery/state/changed"
             }));
 
             ScanDevices();
@@ -153,7 +140,7 @@ namespace LGSTrayBattery_GHUB
             {
                 msgId = "",
                 verb = "GET",
-                path = "/devices"
+                path = "/devices/list"
             }));
         }
 
@@ -161,22 +148,23 @@ namespace LGSTrayBattery_GHUB
         {
             GHUBMsg ghubmsg = JsonConvert.DeserializeObject<GHUBMsg>(msg.Text);
 
-            if (ghubmsg.path == "/devices/arrival" || ghubmsg.path == "/devices/removal" || ghubmsg.path == "/devices/state_changed")
+            if (ghubmsg.path == "/devices/state/changed")
             {
-                _ws.Send(JsonConvert.SerializeObject(new { msgId = "", verb = "GET", path = "/devices" }));
+                ScanDevices();
             }
-            else if (ghubmsg.path == "/devices")
+            else if (ghubmsg.path == "/devices/list")
             {
                 LoadDevices(ghubmsg.payload);
             }
-            else if (ghubmsg.path.StartsWith("/battery_state/"))
+            //else if (ghubmsg.path.StartsWith("/battery_state/"))
+            else if (Regex.IsMatch(ghubmsg.path, @"\/battery\/dev[0-9]+\/state"))
             {
                 if (ghubmsg.result["code"]?.ToString() == "SUCCESS")
                 {
                     UpdateBattery(ghubmsg.payload);
                 }
             }
-            else if (ghubmsg.path == "/battery_state_changed")
+            else if (ghubmsg.path == "/battery/state/changed")
             {
                 UpdateBattery(ghubmsg.payload);
             }
@@ -191,7 +179,7 @@ namespace LGSTrayBattery_GHUB
             _devIdNameMap = new Dictionary<string, Device>();
             List<Device> temp = new List<Device>();
 
-            foreach (var deviceToken in payload["devices"])
+            foreach (var deviceToken in payload["deviceInfos"])
             {
                 Device device = new Device()
                 {
@@ -220,7 +208,7 @@ namespace LGSTrayBattery_GHUB
                 {
                     msgId = "",
                     verb = "GET",
-                    path = $"/battery_state/{device.DeviceId}"
+                    path = $"/battery/{device.DeviceId}/state"
                 }));
             }
         }
