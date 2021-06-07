@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Markup;
 using LGSTrayBattery_GHUB.Properties;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -28,10 +27,6 @@ namespace LGSTrayBattery_GHUB
 
         private WebsocketClient _ws = null;
 
-        [PropertyChanged.DependsOn("SelectedDevice.ToolTip", "_trayToolTip")]
-        public string TrayToolTip => _trayToolTip ?? SelectedDevice?.ToolTip;
-
-        private string _trayToolTip { get; set; } = null;
         public Device SelectedDevice { get; set; } = null;
 
         private Dictionary<string, Device> _devIdNameMap;
@@ -100,7 +95,6 @@ namespace LGSTrayBattery_GHUB
             _ws.ReconnectTimeout = null;
 
             Console.WriteLine($"Trying to connect to LGHUB_agent, at {url}");
-            _trayToolTip = $"Trying to connect to LGHUB agent, at {url}";
 
             while (!_ws.IsRunning)
             {
@@ -108,7 +102,6 @@ namespace LGSTrayBattery_GHUB
             }
 
             Console.WriteLine($"Connected to LGHUB_agent");
-            _trayToolTip = null;
 
             _ws.Send(JsonConvert.SerializeObject(new
             {
