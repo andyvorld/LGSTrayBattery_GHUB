@@ -16,6 +16,7 @@ namespace LGSTrayBattery_GHUB
     class HttpServer
     {
         public static bool ServerEnabled;
+        private static string _tcpAddr;
         private static int _tcpPort;
         private static bool _loaded = false;
 
@@ -32,12 +33,18 @@ namespace LGSTrayBattery_GHUB
 
             if (!bool.TryParse(data["HTTPServer"]["serverEnable"], out ServerEnabled))
             {
-                data["HTTPServer"]["serverEnable"] = "true";
+                data["HTTPServer"]["serverEnable"] = "false";
             }
 
             if (!int.TryParse(data["HTTPServer"]["tcpPort"], out _tcpPort))
             {
                 data["HTTPServer"]["tcpPort"] = "12321";
+            }
+
+            _tcpAddr = data["HTTPServer"]["tcpAddr"];
+            if (_tcpAddr == null)
+            {
+                data["HTTPServer"]["tcpAddr"] = "localhost";
             }
 
             parser.WriteFile("./HttpConfig.ini", data);
@@ -55,17 +62,31 @@ namespace LGSTrayBattery_GHUB
                 return;
             }
 
-            Debug.WriteLine("\nHttp Server started");
+            Debug.WriteLine("\nHttp Server starting");
 
-            IPHostEntry host = Dns.GetHostEntry("localhost");
-            IPAddress ipAddress = host.AddressList[0];
+            IPAddress ipAddress;
+            if (!IPAddress.TryParse(_tcpAddr, out ipAddress))
+            {
+                try
+                {
+                    IPHostEntry host = Dns.GetHostEntry(_tcpAddr);
+                    ipAddress = host.AddressList[0];
+            }
+                catch (SocketException)
+            {
+                    Debug.WriteLine("Invalid hostname, defaulting to loopback");
+                    ipAddress = IPAddress.Loopback;
+            }
+
+            }
+
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _tcpPort);
 
             Socket listener = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             listener.Bind(localEndPoint);
             listener.Listen(10);
 
-            Debug.WriteLine($"Http Server listening on port {_tcpPort}\n");
+            Debug.WriteLine($"Http Server listening on {localEndPoint}\n");
 
             while (true)
             {
