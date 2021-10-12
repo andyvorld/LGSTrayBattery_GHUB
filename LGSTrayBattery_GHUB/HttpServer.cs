@@ -143,7 +143,8 @@ namespace LGSTrayBattery_GHUB
                             }
 
                             string response = $"HTTP/1.1 {statusCode}\r\n" +
-                                              $"{contentType}\r\n" +
+                                              $"Content-Type: {contentType}\r\n" +
+                                              $"Access-Control-Allow-Origin: *\r\n" +
                                               $"Cache-Control: no-store, must-revalidate\r\n" +
                                               $"Pragma: no-cache\r\n" +
                                               $"Expires: 0\r\n" +
@@ -174,7 +175,8 @@ namespace LGSTrayBattery_GHUB
                         }
 
                         string response = $"HTTP/1.1 400\r\n" +
-                                          $"text\r\n" +
+                                          $"Content-Type: text\r\n" +
+                                          $"Access-Control-Allow-Origin: *\r\n" +
                                           $"Cache-Control: no-store, must-revalidate\r\n" +
                                           $"Pragma: no-cache\r\n" +
                                           $"Expires: 0\r\n" +
