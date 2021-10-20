@@ -1,3 +1,7 @@
+## This is now considered depricated, LGSTrayBattery_GHUB has rolled into my other program [LGSTrayBattery](https://github.com/andyvorld/LGSTrayBattery)'s v2, a feature complete v2 release candidate is available. The repository is being archived on the full release of v2.
+
+---
+
 # LGSTRayBattery_GHUB
 
 A tray app used to track battery levels of wireless Logitech **Gaming** devices.
